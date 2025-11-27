@@ -17,6 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.ses.salessupport.entity.JobRequirement;
 import com.ses.salessupport.entity.MatchingResult;
 import com.ses.salessupport.service.JobRequirementService;
+import com.ses.salessupport.service.MatchingResultService;
 import com.ses.salessupport.service.SkillMatchingService;
 
 @Controller
@@ -28,6 +29,9 @@ public class MatchingController {
 
     @Autowired
     private JobRequirementService jobRequirementService;
+
+    @Autowired
+    private MatchingResultService matchingResultService;
 
     /**
      * マッチング一覧ページ
@@ -67,9 +71,9 @@ public class MatchingController {
         if (jobRequirement.isPresent()) {
             model.addAttribute("jobRequirement", jobRequirement.get());
             
-            // マッチング結果を取得（実装は簡易版）
-            // List<MatchingResult> results = matchingResultService.getMatchingResultsByJobRequirement(jobRequirementId);
-            // model.addAttribute("matchingResults", results);
+            // マッチング結果を取得
+            List<MatchingResult> results = matchingResultService.getMatchingResultsByJobRequirement(jobRequirementId);
+            model.addAttribute("matchingResults", results);
             
             return "matching/results";
         } else {
@@ -82,9 +86,14 @@ public class MatchingController {
      */
     @GetMapping("/result/{resultId}")
     public String viewMatchingResultDetail(@PathVariable Long resultId, Model model) {
-        // マッチング結果詳細の実装
-        model.addAttribute("title", "マッチング結果詳細");
-        return "matching/detail";
+        Optional<MatchingResult> result = matchingResultService.getMatchingResultById(resultId);
+        
+        if (result.isPresent()) {
+            model.addAttribute("matchingResult", result.get());
+            return "matching/detail";
+        } else {
+            return "error/404";
+        }
     }
 
     /**
@@ -92,9 +101,10 @@ public class MatchingController {
      */
     @PostMapping("/result/{resultId}/approve")
     public String approveMatchingResult(@PathVariable Long resultId, 
+                                       @RequestParam(required = false) String comments,
                                        RedirectAttributes redirectAttributes) {
         try {
-            // マッチング結果の承認処理
+            matchingResultService.approveMatchingResult(resultId, comments);
             redirectAttributes.addFlashAttribute("successMessage", "マッチング結果が承認されました。");
             return "redirect:/matching/result/" + resultId;
         } catch (Exception e) {
@@ -112,7 +122,7 @@ public class MatchingController {
                                      @RequestParam(required = false) String reason,
                                      RedirectAttributes redirectAttributes) {
         try {
-            // マッチング結果の却下処理
+            matchingResultService.rejectMatchingResult(resultId, reason);
             redirectAttributes.addFlashAttribute("successMessage", "マッチング結果が却下されました。");
             return "redirect:/matching/result/" + resultId;
         } catch (Exception e) {
@@ -184,7 +194,6 @@ public class MatchingController {
     @GetMapping("/api/results/{jobRequirementId}")
     @ResponseBody
     public List<MatchingResult> getMatchingResultsApi(@PathVariable Long jobRequirementId) {
-        // 実装は簡易版
-        return List.of();
+        return matchingResultService.getMatchingResultsByJobRequirement(jobRequirementId);
     }
 }

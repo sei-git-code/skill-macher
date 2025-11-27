@@ -125,7 +125,9 @@ public class SkillMatchingService {
 
             if (matchingSkill.isPresent()) {
                 matchedSkills++;
-                totalProficiency = totalProficiency.add(BigDecimal.valueOf(matchingSkill.get().getProficiencyLevel()));
+                // スキルレベルを数値に変換（1-5スケール）
+                int skillLevelValue = matchingSkill.get().getProficiencyLevel();
+                totalProficiency = totalProficiency.add(BigDecimal.valueOf(skillLevelValue));
             }
         }
 
@@ -157,7 +159,7 @@ public class SkillMatchingService {
         int maxExperienceYears = skills.stream()
             .mapToInt(EmployeeSkill::getYearsOfExperience)
             .max()
-            .orElse(0);
+            .orElse(0); // デフォルト値として0を使用
 
         if (requiredYears == 0) {
             return BigDecimal.valueOf(100);
@@ -179,15 +181,15 @@ public class SkillMatchingService {
     private BigDecimal calculateBudgetMatchScore(JobRequirement jobRequirement, Employee employee) {
         BigDecimal jobBudget = jobRequirement.getBudget();
         BigDecimal employeeHourlyRate = employee.getHourlyRate();
-        Integer durationMonths = jobRequirement.getDurationMonths();
 
-        if (jobBudget == null || employeeHourlyRate == null || durationMonths == null) {
+        if (jobBudget == null || employeeHourlyRate == null) {
             return BigDecimal.valueOf(50); // デフォルトスコア
         }
 
-        // 月間稼働時間を160時間と仮定
-        BigDecimal monthlyHours = BigDecimal.valueOf(160);
-        BigDecimal totalHours = monthlyHours.multiply(BigDecimal.valueOf(durationMonths));
+        // プロジェクト期間を6ヶ月と仮定（実際のプロジェクトでは期間情報を使用）
+        BigDecimal projectMonths = BigDecimal.valueOf(6);
+        BigDecimal monthlyHours = BigDecimal.valueOf(160); // 月間稼働時間
+        BigDecimal totalHours = monthlyHours.multiply(projectMonths);
         BigDecimal estimatedCost = employeeHourlyRate.multiply(totalHours);
 
         // 予算との差を計算
@@ -228,11 +230,11 @@ public class SkillMatchingService {
         Optional<SkillMapping> mapping = skillMappingRepository.findBySkillName(employeeSkill);
         if (mapping.isPresent()) {
             SkillMapping skillMap = mapping.get();
-            return skillMap.getRelatedSkill1().equalsIgnoreCase(requiredSkill) ||
-                   skillMap.getRelatedSkill2().equalsIgnoreCase(requiredSkill) ||
-                   skillMap.getRelatedSkill3().equalsIgnoreCase(requiredSkill) ||
-                   skillMap.getRelatedSkill4().equalsIgnoreCase(requiredSkill) ||
-                   skillMap.getRelatedSkill5().equalsIgnoreCase(requiredSkill);
+            return skillMap.getRelatedSkill1() != null && skillMap.getRelatedSkill1().equalsIgnoreCase(requiredSkill) ||
+                   skillMap.getRelatedSkill2() != null && skillMap.getRelatedSkill2().equalsIgnoreCase(requiredSkill) ||
+                   skillMap.getRelatedSkill3() != null && skillMap.getRelatedSkill3().equalsIgnoreCase(requiredSkill) ||
+                   skillMap.getRelatedSkill4() != null && skillMap.getRelatedSkill4().equalsIgnoreCase(requiredSkill) ||
+                   skillMap.getRelatedSkill5() != null && skillMap.getRelatedSkill5().equalsIgnoreCase(requiredSkill);
         }
 
         return false;
@@ -306,5 +308,25 @@ public class SkillMatchingService {
         }
 
         result.setRecommendationReason(reason.toString());
+    }
+    
+    /**
+     * スキルレベルを数値に変換
+     */
+    private int convertSkillLevelToValue(String skillLevel) {
+        if (skillLevel == null) {
+            return 1;
+        }
+        
+        switch (skillLevel.toUpperCase()) {
+            case "BEGINNER":
+                return 1;
+            case "INTERMEDIATE":
+                return 3;
+            case "EXPERT":
+                return 5;
+            default:
+                return 1;
+        }
     }
 }

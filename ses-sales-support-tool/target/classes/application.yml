@@ -7,9 +7,9 @@ spring:
     active: dev
 
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/ses_sales_support_dev}?sslmode=require
+    url: ${DATABASE_URL:jdbc:postgresql://db.your-project-ref.supabase.co:5432/postgres}?sslmode=require
     username: ${DATABASE_USERNAME:postgres}
-    password: ${DATABASE_PASSWORD:dev_password}
+    password: ${DATABASE_PASSWORD:your-database-password}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10

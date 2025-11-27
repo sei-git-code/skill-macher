@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html
+  lang="ja"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{layout :: layout(~{::title}, ~{::content})}"
+>
+  <head>
+    <title>SES人員一覧 - SES営業支援ツール</title>
+  </head>
+  <body>
+    <div th:fragment="content">
+      <!-- Page Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 mb-0">
+            <i class="bi bi-person-badge me-2"></i>
+            <span th:text="${title != null ? title : 'SES人員一覧'}"></span>
+          </h1>
+          <p class="text-muted mb-0">SES人員の管理と確認</p>
+        </div>
+        <div>
+          <a href="/employees/create" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>新規登録
+          </a>
+        </div>
+      </div>
+
+      <!-- Search and Filter -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <form method="get" class="row g-3">
+            <div class="col-md-4">
+              <label for="keyword" class="form-label">キーワード検索</label>
+              <input
+                type="text"
+                class="form-control"
+                id="keyword"
+                name="keyword"
+                th:value="${keyword}"
+                placeholder="名前、スキルで検索"
+              />
+            </div>
+            <div class="col-md-3">
+              <label for="status" class="form-label">ステータス</label>
+              <select class="form-select" id="status" name="status">
+                <option value="">すべて</option>
+                <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">
+                  アクティブ
+                </option>
+                <option value="INACTIVE" th:selected="${status == 'INACTIVE'}">
+                  非アクティブ
+                </option>
+                <option
+                  value="ON_PROJECT"
+                  th:selected="${status == 'ON_PROJECT'}"
+                >
+                  プロジェクト中
+                </option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label for="employmentType" class="form-label">雇用形態</label>
+              <select
+                class="form-select"
+                id="employmentType"
+                name="employmentType"
+              >
+                <option value="">すべて</option>
+                <option
+                  value="FULL_TIME"
+                  th:selected="${employmentType == 'FULL_TIME'}"
+                >
+                  正社員
+                </option>
+                <option
+                  value="CONTRACT"
+                  th:selected="${employmentType == 'CONTRACT'}"
+                >
+                  契約社員
+                </option>
+                <option
+                  value="FREELANCE"
+                  th:selected="${employmentType == 'FREELANCE'}"
+                >
+                  フリーランス
+                </option>
+              </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+              <button type="submit" class="btn btn-outline-primary me-2">
+                <i class="bi bi-search me-1"></i>検索
+              </button>
+              <a href="/employees" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-clockwise me-1"></i>リセット
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Employees List -->
+      <div class="card">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h5 class="mb-0">人員一覧</h5>
+          <span
+            class="badge bg-secondary"
+            th:text="'全 ' + ${totalItems} + ' 名'"
+          ></span>
+        </div>
+        <div class="card-body p-0">
+          <div th:if="${employees.empty}" class="text-center py-5">
+            <i class="bi bi-person-x display-1 text-muted"></i>
+            <h4 class="text-muted mt-3">登録された人員がありません</h4>
+            <p class="text-muted">新しい人員を登録してください。</p>
+            <a href="/employees/create" class="btn btn-primary">
+              <i class="bi bi-plus-circle me-1"></i>新規登録
+            </a>
+          </div>
+
+          <div th:unless="${employees.empty}" class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>名前</th>
+                  <th>メール</th>
+                  <th>スキル</th>
+                  <th>経験年数</th>
+                  <th>時給</th>
+                  <th>ステータス</th>
+                  <th>雇用形態</th>
+                  <th>登録日</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="employee : ${employees.content}">
+                  <td>
+                    <a
+                      th:href="@{/employees/{id}(id=${employee.id})}"
+                      th:text="${employee.firstName + ' ' + employee.lastName}"
+                      class="text-decoration-none fw-bold"
+                    >
+                    </a>
+                  </td>
+                  <td th:text="${employee.email}"></td>
+                  <td>
+                    <span
+                      th:if="${employee.skills != null and !employee.skills.isEmpty()}"
+                    >
+                      <span
+                        th:each="skill, iterStat : ${employee.skills}"
+                        th:text="${skill.skillName}"
+                        class="badge bg-info me-1"
+                      >
+                      </span>
+                    </span>
+                    <span
+                      th:unless="${employee.skills != null and !employee.skills.isEmpty()}"
+                      class="text-muted"
+                    >
+                      未設定
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      th:text="${employee.experienceYears != null ? employee.experienceYears + '年' : '未設定'}"
+                    ></span>
+                  </td>
+                  <td>
+                    <span
+                      th:text="${employee.hourlyRate != null ? '¥' + #numbers.formatDecimal(employee.hourlyRate, 0, 'COMMA', 0, 'POINT') : '未設定'}"
+                    ></span>
+                  </td>
+                  <td>
+                    <span th:switch="${employee.status}" class="badge">
+                      <span th:case="ACTIVE" class="badge bg-success"
+                        >アクティブ</span
+                      >
+                      <span th:case="INACTIVE" class="badge bg-secondary"
+                        >非アクティブ</span
+                      >
+                      <span th:case="ON_PROJECT" class="badge bg-primary"
+                        >プロジェクト中</span
+                      >
+                    </span>
+                  </td>
+                  <td>
+                    <span th:switch="${employee.employmentType}" class="badge">
+                      <span th:case="FULL_TIME" class="badge bg-primary"
+                        >正社員</span
+                      >
+                      <span th:case="CONTRACT" class="badge bg-warning"
+                        >契約社員</span
+                      >
+                      <span th:case="FREELANCE" class="badge bg-info"
+                        >フリーランス</span
+                      >
+                    </span>
+                  </td>
+                  <td
+                    th:text="${#temporals.format(employee.createdAt, 'yyyy/MM/dd')}"
+                  ></td>
+                  <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                      <a
+                        th:href="@{/employees/{id}(id=${employee.id})}"
+                        class="btn btn-outline-primary"
+                        title="詳細"
+                      >
+                        <i class="bi bi-eye"></i>
+                      </a>
+                      <a
+                        th:href="@{/employees/{id}/edit(id=${employee.id})}"
+                        class="btn btn-outline-secondary"
+                        title="編集"
+                      >
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <button
+                        type="button"
+                        class="btn btn-outline-danger"
+                        th:onclick="'confirmDelete(' + ${employee.id} + ')'"
+                        title="削除"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div th:if="${totalPages > 1}" class="card-footer">
+          <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mb-0">
+              <li
+                class="page-item"
+                th:classappend="${currentPage == 0} ? 'disabled'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/employees(page=${currentPage - 1}, size=10, sortBy=createdAt, sortDir=desc, keyword=${keyword}, status=${status}, employmentType=${employmentType})}"
+                >
+                  <i class="bi bi-chevron-left"></i>
+                </a>
+              </li>
+
+              <li
+                th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}"
+                th:if="${pageNum >= currentPage - 2 and pageNum <= currentPage + 2}"
+                class="page-item"
+                th:classappend="${pageNum == currentPage} ? 'active'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/employees(page=${pageNum}, size=10, sortBy=createdAt, sortDir=desc, keyword=${keyword}, status=${status}, employmentType=${employmentType})}"
+                  th:text="${pageNum + 1}"
+                >
+                </a>
+              </li>
+
+              <li
+                class="page-item"
+                th:classappend="${currentPage == totalPages - 1} ? 'disabled'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/employees(page=${currentPage + 1}, size=10, sortBy=createdAt, sortDir=desc, keyword=${keyword}, status=${status}, employmentType=${employmentType})}"
+                >
+                  <i class="bi bi-chevron-right"></i>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">削除確認</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            この人員を削除してもよろしいですか？この操作は取り消せません。
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              キャンセル
+            </button>
+            <form id="deleteForm" method="post" style="display: inline">
+              <button type="submit" class="btn btn-danger">削除</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function confirmDelete(employeeId) {
+        document.getElementById("deleteForm").action =
+          "/employees/" + employeeId + "/delete";
+        new bootstrap.Modal(document.getElementById("deleteModal")).show();
+      }
+    </script>
+  </body>
+</html>
+

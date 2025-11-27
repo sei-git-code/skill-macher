@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html
+  lang="ja"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{layout :: layout(~{::title}, ~{::content})}"
+>
+  <head>
+    <title>スキルマッチング - SES営業支援ツール</title>
+  </head>
+  <body>
+    <div th:fragment="content">
+      <!-- Page Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 mb-0">
+            <i class="bi bi-diagram-3 me-2"></i>スキルマッチング
+          </h1>
+          <p class="text-muted mb-0">人員募集要項とSES人員のスキルマッチング</p>
+        </div>
+        <div>
+          <a href="/matching/settings" class="btn btn-outline-secondary">
+            <i class="bi bi-gear me-1"></i>設定
+          </a>
+        </div>
+      </div>
+
+      <!-- Matching Selection -->
+      <div class="row mb-4">
+        <div class="col-lg-6">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">ジョブ要件選択</h5>
+            </div>
+            <div class="card-body">
+              <form id="jobRequirementForm">
+                <div class="mb-3">
+                  <label for="jobRequirementId" class="form-label"
+                    >募集要項</label
+                  >
+                  <select class="form-select" id="jobRequirementId" required>
+                    <option value="">選択してください</option>
+                    <!-- 動的に読み込まれる -->
+                  </select>
+                </div>
+                <button
+                  type="button"
+                  class="btn btn-primary w-100"
+                  onclick="loadJobRequirement()"
+                >
+                  <i class="bi bi-search me-1"></i>詳細を表示
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">マッチング実行</h5>
+            </div>
+            <div class="card-body">
+              <div id="jobRequirementInfo" class="mb-3" style="display: none">
+                <h6 id="jobTitle"></h6>
+                <p id="jobDescription" class="text-muted small"></p>
+                <div id="jobSkills" class="mb-3"></div>
+              </div>
+              <button
+                type="button"
+                class="btn btn-success w-100"
+                id="executeMatchingBtn"
+                disabled
+                onclick="executeMatching()"
+              >
+                <i class="bi bi-play-circle me-1"></i>マッチング実行
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Job Requirement Details -->
+      <div class="card mb-4" id="jobRequirementCard" style="display: none">
+        <div class="card-header">
+          <h5 class="mb-0">選択されたジョブ要件</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <dl class="row">
+                <dt class="col-sm-4">プロジェクト名</dt>
+                <dd class="col-sm-8" id="detailProjectName"></dd>
+
+                <dt class="col-sm-4">クライアント</dt>
+                <dd class="col-sm-8" id="detailClientName"></dd>
+
+                <dt class="col-sm-4">経験年数</dt>
+                <dd class="col-sm-8" id="detailExperienceYears"></dd>
+
+                <dt class="col-sm-4">勤務形態</dt>
+                <dd class="col-sm-8" id="detailWorkType"></dd>
+              </dl>
+            </div>
+            <div class="col-md-6">
+              <dl class="row">
+                <dt class="col-sm-4">優先度</dt>
+                <dd class="col-sm-8" id="detailPriority"></dd>
+
+                <dt class="col-sm-4">ステータス</dt>
+                <dd class="col-sm-8" id="detailStatus"></dd>
+
+                <dt class="col-sm-4">予算上限</dt>
+                <dd class="col-sm-8" id="detailBudget"></dd>
+
+                <dt class="col-sm-4">期間</dt>
+                <dd class="col-sm-8" id="detailPeriod"></dd>
+              </dl>
+            </div>
+          </div>
+
+          <div class="row mt-3">
+            <div class="col-md-6">
+              <h6>必須スキル</h6>
+              <div id="detailRequiredSkills"></div>
+            </div>
+            <div class="col-md-6">
+              <h6>希望スキル</h6>
+              <div id="detailPreferredSkills"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Matching Results -->
+      <div class="card" id="matchingResultsCard" style="display: none">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h5 class="mb-0">マッチング結果</h5>
+          <div>
+            <span class="badge bg-primary me-2" id="resultCount"></span>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary"
+              onclick="refreshResults()"
+            >
+              <i class="bi bi-arrow-clockwise me-1"></i>更新
+            </button>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div id="matchingResultsContent">
+            <!-- 結果が動的に読み込まれる -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading Overlay -->
+      <div
+        id="loadingOverlay"
+        class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+        style="
+          background-color: rgba(0, 0, 0, 0.5);
+          z-index: 9999;
+          display: none !important;
+        "
+      >
+        <div class="card">
+          <div class="card-body text-center">
+            <div class="spinner-border text-primary mb-3" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <h5>マッチング実行中...</h5>
+            <p class="text-muted mb-0">しばらくお待ちください</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let selectedJobRequirementId = null;
+      let currentJobRequirement = null;
+
+      // ページ読み込み時にジョブ要件一覧を取得
+      document.addEventListener("DOMContentLoaded", function () {
+        loadJobRequirements();
+      });
+
+      // ジョブ要件一覧を読み込み
+      async function loadJobRequirements() {
+        try {
+          const response = await fetch("/job-requirements/api");
+          const jobRequirements = await response.json();
+
+          const select = document.getElementById("jobRequirementId");
+          select.innerHTML = '<option value="">選択してください</option>';
+
+          jobRequirements.forEach((job) => {
+            const option = document.createElement("option");
+            option.value = job.id;
+            option.textContent = job.projectName + " (" + job.clientName + ")";
+            select.appendChild(option);
+          });
+        } catch (error) {
+          console.error("ジョブ要件の読み込みに失敗しました:", error);
+          showAlert("ジョブ要件の読み込みに失敗しました", "danger");
+        }
+      }
+
+      // 選択されたジョブ要件の詳細を読み込み
+      async function loadJobRequirement() {
+        const jobId = document.getElementById("jobRequirementId").value;
+        if (!jobId) {
+          showAlert("ジョブ要件を選択してください", "warning");
+          return;
+        }
+
+        try {
+          const response = await fetch("/job-requirements/api/" + jobId);
+          const jobRequirement = await response.json();
+
+          if (jobRequirement) {
+            currentJobRequirement = jobRequirement;
+            selectedJobRequirementId = jobId;
+
+            // 基本情報を表示
+            document.getElementById("jobTitle").textContent =
+              jobRequirement.projectName;
+            document.getElementById("jobDescription").textContent =
+              jobRequirement.description || "説明なし";
+
+            // スキルを表示
+            displaySkills("jobSkills", jobRequirement.requiredSkills, "必須");
+
+            // 詳細情報を表示
+            displayJobRequirementDetails(jobRequirement);
+
+            // UIを更新
+            document.getElementById("jobRequirementInfo").style.display =
+              "block";
+            document.getElementById("jobRequirementCard").style.display =
+              "block";
+            document.getElementById("executeMatchingBtn").disabled = false;
+          }
+        } catch (error) {
+          console.error("ジョブ要件の詳細読み込みに失敗しました:", error);
+          showAlert("ジョブ要件の詳細読み込みに失敗しました", "danger");
+        }
+      }
+
+      // ジョブ要件の詳細を表示
+      function displayJobRequirementDetails(jobRequirement) {
+        document.getElementById("detailProjectName").textContent =
+          jobRequirement.projectName;
+        document.getElementById("detailClientName").textContent =
+          jobRequirement.clientName;
+        document.getElementById("detailExperienceYears").textContent =
+          jobRequirement.experienceYears + "年";
+        document.getElementById("detailWorkType").textContent =
+          jobRequirement.workType || "未設定";
+        document.getElementById("detailPriority").textContent =
+          jobRequirement.priority || "未設定";
+        document.getElementById("detailStatus").textContent =
+          jobRequirement.status || "未設定";
+        document.getElementById("detailBudget").textContent =
+          jobRequirement.budgetMax
+            ? "¥" + jobRequirement.budgetMax.toLocaleString() + "/月"
+            : "未設定";
+
+        const startDate = jobRequirement.startDate
+          ? new Date(jobRequirement.startDate).toLocaleDateString()
+          : "未設定";
+        const endDate = jobRequirement.endDate
+          ? new Date(jobRequirement.endDate).toLocaleDateString()
+          : "未設定";
+        document.getElementById("detailPeriod").textContent =
+          startDate + " ～ " + endDate;
+
+        displaySkills(
+          "detailRequiredSkills",
+          jobRequirement.requiredSkills,
+          "必須"
+        );
+        displaySkills(
+          "detailPreferredSkills",
+          jobRequirement.preferredSkills,
+          "希望"
+        );
+      }
+
+      // スキルを表示
+      function displaySkills(containerId, skills, label) {
+        const container = document.getElementById(containerId);
+        if (skills && skills.length > 0) {
+          container.innerHTML = skills
+            .map(
+              (skill) => `<span class="badge bg-info me-1 mb-1">${skill}</span>`
+            )
+            .join("");
+        } else {
+          container.innerHTML = `<span class="text-muted">${label}スキルは設定されていません</span>`;
+        }
+      }
+
+      // マッチング実行
+      async function executeMatching() {
+        if (!selectedJobRequirementId) {
+          showAlert("ジョブ要件を選択してください", "warning");
+          return;
+        }
+
+        // ローディング表示
+        document.getElementById("loadingOverlay").style.display = "flex";
+
+        try {
+          const response = await fetch(
+            "/matching/api/execute/" + selectedJobRequirementId,
+            {
+              method: "POST",
+            }
+          );
+
+          if (response.ok) {
+            const results = await response.json();
+            displayMatchingResults(results);
+            showAlert("マッチングが完了しました", "success");
+          } else {
+            throw new Error("マッチングの実行に失敗しました");
+          }
+        } catch (error) {
+          console.error("マッチング実行エラー:", error);
+          showAlert("マッチングの実行に失敗しました", "danger");
+        } finally {
+          // ローディング非表示
+          document.getElementById("loadingOverlay").style.display = "none";
+        }
+      }
+
+      // マッチング結果を表示
+      function displayMatchingResults(results) {
+        const container = document.getElementById("matchingResultsContent");
+        const countElement = document.getElementById("resultCount");
+
+        countElement.textContent = results.length + " 件の結果";
+
+        if (results.length === 0) {
+          container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="bi bi-search display-1 text-muted"></i>
+                        <h4 class="text-muted mt-3">マッチする人員が見つかりませんでした</h4>
+                        <p class="text-muted">条件を変更して再度実行してください。</p>
+                    </div>
+                `;
+        } else {
+          container.innerHTML = results
+            .map(
+              (result) => `
+                    <div class="border-bottom p-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h6 class="mb-1">${result.employee.firstName} ${
+                result.employee.lastName
+              }</h6>
+                                <p class="text-muted mb-1">${
+                                  result.employee.email
+                                }</p>
+                                <div class="mb-2">
+                                    <span class="badge bg-primary me-1">${
+                                      result.matchScore
+                                    }% マッチ</span>
+                                    <span class="badge bg-secondary me-1">${
+                                      result.employee.experienceYears
+                                    }年経験</span>
+                                    <span class="badge bg-info">¥${result.employee.hourlyRate.toLocaleString()}/時</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="progress mb-2" style="height: 8px;">
+                                    <div class="progress-bar" style="width: ${
+                                      result.matchScore
+                                    }%"></div>
+                                </div>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" onclick="viewMatchingDetail(${
+                                      result.id
+                                    })">
+                                        <i class="bi bi-eye"></i> 詳細
+                                    </button>
+                                    <button class="btn btn-success" onclick="approveMatching(${
+                                      result.id
+                                    })">
+                                        <i class="bi bi-check"></i> 承認
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            )
+            .join("");
+        }
+
+        document.getElementById("matchingResultsCard").style.display = "block";
+      }
+
+      // 結果を更新
+      function refreshResults() {
+        if (selectedJobRequirementId) {
+          executeMatching();
+        }
+      }
+
+      // マッチング詳細表示
+      function viewMatchingDetail(resultId) {
+        window.location.href = "/matching/result/" + resultId;
+      }
+
+      // マッチング承認
+      async function approveMatching(resultId) {
+        if (confirm("このマッチング結果を承認しますか？")) {
+          try {
+            const response = await fetch(
+              "/matching/result/" + resultId + "/approve",
+              {
+                method: "POST",
+              }
+            );
+
+            if (response.ok) {
+              showAlert("マッチング結果が承認されました", "success");
+              refreshResults();
+            } else {
+              throw new Error("承認に失敗しました");
+            }
+          } catch (error) {
+            console.error("承認エラー:", error);
+            showAlert("承認に失敗しました", "danger");
+          }
+        }
+      }
+
+      // アラート表示
+      function showAlert(message, type) {
+        const alertDiv = document.createElement("div");
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+                <i class="bi bi-${
+                  type === "success"
+                    ? "check-circle"
+                    : type === "danger"
+                    ? "exclamation-triangle"
+                    : "info-circle"
+                } me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+        const container = document.querySelector("main .container-fluid");
+        container.insertBefore(alertDiv, container.firstChild);
+
+        // 5秒後に自動で非表示
+        setTimeout(() => {
+          if (alertDiv.parentNode) {
+            alertDiv.remove();
+          }
+        }, 5000);
+      }
+    </script>
+  </body>
+</html>
+

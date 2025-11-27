@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html
+  lang="ja"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{layout :: layout(~{::title}, ~{::content})}"
+>
+  <head>
+    <title>人員募集要項一覧 - SES営業支援ツール</title>
+  </head>
+  <body>
+    <div th:fragment="content">
+      <!-- Page Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 mb-0">
+            <i class="bi bi-briefcase me-2"></i>
+            <span
+              th:text="${title != null ? title : '人員募集要項一覧'}"
+            ></span>
+          </h1>
+          <p class="text-muted mb-0">人員募集要項の管理と確認</p>
+        </div>
+        <div>
+          <a href="/job-requirements/create" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>新規作成
+          </a>
+        </div>
+      </div>
+
+      <!-- Search and Filter -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <form method="get" class="row g-3">
+            <div class="col-md-4">
+              <label for="keyword" class="form-label">キーワード検索</label>
+              <input
+                type="text"
+                class="form-control"
+                id="keyword"
+                name="keyword"
+                th:value="${keyword}"
+                placeholder="プロジェクト名、技術要件で検索"
+              />
+            </div>
+            <div class="col-md-3">
+              <label for="status" class="form-label">ステータス</label>
+              <select class="form-select" id="status" name="status">
+                <option value="">すべて</option>
+                <option value="OPEN" th:selected="${status == 'OPEN'}">
+                  オープン
+                </option>
+                <option
+                  value="IN_PROGRESS"
+                  th:selected="${status == 'IN_PROGRESS'}"
+                >
+                  進行中
+                </option>
+                <option value="CLOSED" th:selected="${status == 'CLOSED'}">
+                  クローズ
+                </option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label for="priority" class="form-label">優先度</label>
+              <select class="form-select" id="priority" name="priority">
+                <option value="">すべて</option>
+                <option value="HIGH" th:selected="${priority == 'HIGH'}">
+                  高
+                </option>
+                <option value="MEDIUM" th:selected="${priority == 'MEDIUM'}">
+                  中
+                </option>
+                <option value="LOW" th:selected="${priority == 'LOW'}">
+                  低
+                </option>
+              </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+              <button type="submit" class="btn btn-outline-primary me-2">
+                <i class="bi bi-search me-1"></i>検索
+              </button>
+              <a href="/job-requirements" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-clockwise me-1"></i>リセット
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Job Requirements List -->
+      <div class="card">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h5 class="mb-0">募集要項一覧</h5>
+          <span
+            class="badge bg-secondary"
+            th:text="'全 ' + ${totalItems} + ' 件'"
+          ></span>
+        </div>
+        <div class="card-body p-0">
+          <div th:if="${jobRequirements.empty}" class="text-center py-5">
+            <i class="bi bi-inbox display-1 text-muted"></i>
+            <h4 class="text-muted mt-3">募集要項がありません</h4>
+            <p class="text-muted">新しい募集要項を作成してください。</p>
+            <a href="/job-requirements/create" class="btn btn-primary">
+              <i class="bi bi-plus-circle me-1"></i>新規作成
+            </a>
+          </div>
+
+          <div th:unless="${jobRequirements.empty}" class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>プロジェクト名</th>
+                  <th>クライアント</th>
+                  <th>技術要件</th>
+                  <th>経験年数</th>
+                  <th>優先度</th>
+                  <th>ステータス</th>
+                  <th>作成日</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="job : ${jobRequirements.content}">
+                  <td>
+                    <a
+                      th:href="@{/job-requirements/{id}(id=${job.id})}"
+                      th:text="${job.projectName}"
+                      class="text-decoration-none fw-bold"
+                    >
+                    </a>
+                  </td>
+                  <td th:text="${job.clientName}"></td>
+                  <td>
+                    <span
+                      th:each="skill, iterStat : ${job.requiredSkills}"
+                      th:text="${skill}"
+                      class="badge bg-info me-1"
+                    >
+                    </span>
+                  </td>
+                  <td>
+                    <span th:text="${job.experienceYears} + '年'"></span>
+                  </td>
+                  <td>
+                    <span th:switch="${job.priority}" class="badge">
+                      <span th:case="HIGH" class="badge bg-danger">高</span>
+                      <span th:case="MEDIUM" class="badge bg-warning">中</span>
+                      <span th:case="LOW" class="badge bg-success">低</span>
+                    </span>
+                  </td>
+                  <td>
+                    <span th:switch="${job.status}" class="badge">
+                      <span th:case="OPEN" class="badge bg-success"
+                        >オープン</span
+                      >
+                      <span th:case="IN_PROGRESS" class="badge bg-primary"
+                        >進行中</span
+                      >
+                      <span th:case="CLOSED" class="badge bg-secondary"
+                        >クローズ</span
+                      >
+                    </span>
+                  </td>
+                  <td
+                    th:text="${#temporals.format(job.createdAt, 'yyyy/MM/dd')}"
+                  ></td>
+                  <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                      <a
+                        th:href="@{/job-requirements/{id}(id=${job.id})}"
+                        class="btn btn-outline-primary"
+                        title="詳細"
+                      >
+                        <i class="bi bi-eye"></i>
+                      </a>
+                      <a
+                        th:href="@{/job-requirements/{id}/edit(id=${job.id})}"
+                        class="btn btn-outline-secondary"
+                        title="編集"
+                      >
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <button
+                        type="button"
+                        class="btn btn-outline-danger"
+                        th:onclick="'confirmDelete(' + ${job.id} + ')'"
+                        title="削除"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div th:if="${totalPages > 1}" class="card-footer">
+          <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mb-0">
+              <li
+                class="page-item"
+                th:classappend="${currentPage == 0} ? 'disabled'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/job-requirements(page=${currentPage - 1}, size=10, sortBy=createdAt, sortDir=desc, keyword=${keyword}, status=${status}, priority=${priority})}"
+                >
+                  <i class="bi bi-chevron-left"></i>
+                </a>
+              </li>
+
+              <li
+                th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}"
+                th:if="${pageNum >= currentPage - 2 and pageNum <= currentPage + 2}"
+                class="page-item"
+                th:classappend="${pageNum == currentPage} ? 'active'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/job-requirements(page=${pageNum}, size=10, sortBy=createdAt, sortDir=desc, keyword=${keyword}, status=${status}, priority=${priority})}"
+                  th:text="${pageNum + 1}"
+                >
+                </a>
+              </li>
+
+              <li
+                class="page-item"
+                th:classappend="${currentPage == totalPages - 1} ? 'disabled'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/job-requirements(page=${currentPage + 1}, size=10, sortBy=createdAt, sortDir=desc, keyword=${keyword}, status=${status}, priority=${priority})}"
+                >
+                  <i class="bi bi-chevron-right"></i>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">削除確認</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            この募集要項を削除してもよろしいですか？この操作は取り消せません。
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              キャンセル
+            </button>
+            <form id="deleteForm" method="post" style="display: inline">
+              <button type="submit" class="btn btn-danger">削除</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function confirmDelete(jobId) {
+        document.getElementById("deleteForm").action =
+          "/job-requirements/" + jobId + "/delete";
+        new bootstrap.Modal(document.getElementById("deleteModal")).show();
+      }
+    </script>
+  </body>
+</html>
+

@@ -463,3 +463,188 @@ java -jar target/ses-sales-support-tool-1.0.0.jar
 5. OCI へのデプロイ
 
 開発を開始する準備が整いました！設計ドキュメントを参照しながら、段階的に実装を進めてください。
+
+## 📊 開発進行状況
+
+### ✅ 完了済み項目
+
+#### 1. プロジェクト基盤構築
+
+- [x] Spring Boot プロジェクト初期化
+- [x] Maven 依存関係設定（JWT、PostgreSQL、Spring Security 等）
+- [x] アプリケーション設定ファイル（application.yml）
+- [x] パッケージ構造の作成
+
+#### 2. 設計ドキュメント
+
+- [x] 要件定義書
+- [x] 基本設計書（システム概要、データベース、API、アプリケーション、クラス、インフラ）
+- [x] 詳細設計書（画面、スキルマッチングロジック、セキュリティ、設定、テスト）
+- [x] 開発・運用ドキュメント（環境構築、デプロイ、運用マニュアル）
+
+#### 3. バックエンド実装
+
+- [x] **エンティティ層** (8 ファイル)
+  - User.java, UserProfile.java
+  - JobRequirement.java, Employee.java, EmployeeSkill.java
+  - MatchingResult.java, SkillMapping.java, SystemLog.java
+- [x] **リポジトリ層** (7 ファイル)
+  - UserRepository.java, JobRequirementRepository.java, EmployeeRepository.java
+  - EmployeeSkillRepository.java, MatchingResultRepository.java
+  - SkillMappingRepository.java, SystemLogRepository.java
+- [x] **サービス層** (5 ファイル)
+  - AuthService.java, DashboardService.java, EmployeeService.java
+  - JobRequirementService.java, SkillMatchingService.java
+- [x] **コントローラー層** (5 ファイル)
+  - LoginController.java, DashboardController.java, JobRequirementController.java
+  - EmployeeController.java, MatchingController.java
+- [x] **設定クラス** (3 ファイル)
+  - SupabaseSecurityConfig.java, DatabaseConfig.java, ThymeleafConfig.java
+- [x] **セキュリティ** (1 ファイル)
+  - SupabaseJwtAuthenticationFilter.java
+
+#### 4. フロントエンド実装
+
+- [x] **Thymeleaf テンプレート** (3 ファイル)
+  - layout.html (レイアウトテンプレート)
+  - dashboard.html (ダッシュボード画面)
+  - auth/login.html (ログイン画面)
+- [x] **静的リソース**
+  - CSS (style.css)
+  - JavaScript (app.js)
+
+#### 5. フロントエンド画面実装
+
+- [x] **人員募集要項管理画面** (4 ファイル)
+  - list.html (一覧画面)
+  - detail.html (詳細画面)
+  - create.html (作成画面)
+  - edit.html (編集画面)
+- [x] **SES 人員管理画面** (4 ファイル)
+  - list.html (一覧画面)
+  - detail.html (詳細画面)
+  - create.html (作成画面)
+  - edit.html (編集画面)
+- [x] **スキルマッチング画面** (1 ファイル)
+  - list.html (マッチング実行・結果表示画面)
+- [x] **エラーページ** (1 ファイル)
+  - 404.html (404 エラーページ)
+
+#### 6. データベース設定
+
+- [x] **Supabase PostgreSQL 接続設定**
+  - application.yml の更新
+  - データベース設定クラスの更新
+- [x] **データベース初期化スクリプト**
+  - init.sql (テーブル作成スクリプト)
+  - test-data.sql (テストデータ投入スクリプト)
+- [x] **データベース接続テスト機能**
+  - DatabaseConfig.java に接続テスト機能追加
+- [x] **データベース設定手順書**
+  - DATABASE_SETUP.md (詳細な設定手順)
+
+#### 7. DTO・例外処理
+
+- [x] **DTO クラス群** (8 ファイル)
+  - LoginRequest.java, RegisterRequest.java
+  - JobRequirementDto.java, EmployeeDto.java, EmployeeSkillDto.java
+  - MatchingRequest.java, MatchingResultDto.java
+  - DashboardStatsDto.java, ApiResponse.java
+- [x] **例外クラス群** (6 ファイル)
+  - ResourceNotFoundException.java, ValidationException.java
+  - AuthenticationException.java, AuthorizationException.java
+  - BusinessLogicException.java, GlobalExceptionHandler.java
+
+#### 8. スキルマッチング機能
+
+- [x] **スキルマッチングサービスの改善**
+  - SkillMatchingService.java の修正・最適化
+  - スキルマッチングアルゴリズムの実装
+  - 経験年数・予算マッチング機能
+- [x] **マッチング結果管理**
+  - MatchingResultService.java の実装
+  - マッチング結果の承認・却下機能
+- [x] **マッチング画面の実装**
+  - matching/results.html (マッチング結果一覧)
+  - matching/detail.html (マッチング結果詳細)
+- [x] **MatchingController の改善**
+  - 実際のサービス連携
+  - API エンドポイントの実装
+
+#### 9. ビルド・コンパイル
+
+- [x] Maven ビルド成功（46 個の Java ファイル）
+- [x] コンパイルエラーなし（警告のみ：非推奨 API 使用）
+
+### 🚧 進行中・未完了項目
+
+#### 1. テスト実装
+
+- [ ] ユニットテスト
+- [ ] 統合テスト
+- [ ] E2E テスト
+
+#### 2. デプロイメント
+
+- [ ] Docker 設定
+- [ ] GitHub Actions CI/CD
+- [ ] OCI デプロイ設定
+
+### 📈 進捗率
+
+- **全体進捗**: 約 90%
+- **バックエンド**: 約 95% (コア機能実装完了)
+- **フロントエンド**: 約 90% (主要画面実装完了)
+- **データベース**: 約 90% (設定・スクリプト完了)
+- **DTO・例外処理**: 約 100% (実装完了)
+- **スキルマッチング**: 約 95% (動作確認済み)
+- **インフラ・デプロイ**: 約 10% (設計のみ)
+
+### 🎯 次の優先タスク
+
+1. **ユニットテストと統合テストの実装**
+2. **Docker 設定とデプロイメント準備**
+3. **本番環境での動作確認**
+4. **パフォーマンステストと最適化**
+
+### 📝 実装済みファイル一覧
+
+**Java ファイル (46 個)**:
+
+- エンティティ: 8 個
+- リポジトリ: 7 個
+- サービス: 6 個
+- コントローラー: 5 個
+- 設定: 3 個
+- セキュリティ: 1 個
+- DTO: 8 個
+- 例外: 6 個
+- メインアプリケーション: 1 個
+- スキルマッチング: 1 個
+
+**HTML ファイル (14 個)**:
+
+- レイアウト: layout.html
+- ダッシュボード: dashboard.html
+- ログイン: auth/login.html
+- 人員募集要項: job-requirements/list.html, detail.html, create.html, edit.html
+- SES 人員: employees/list.html, detail.html, create.html, edit.html
+- マッチング: matching/list.html, results.html, detail.html
+- エラー: error/404.html
+
+**データベースファイル (3 個)**:
+
+- 初期化スクリプト: db/init.sql
+- テストデータ: db/test-data.sql
+- 設定手順書: DATABASE_SETUP.md
+
+**設定ファイル**:
+
+- application.yml, pom.xml
+
+### ⚠️ 注意事項
+
+- JWT 認証フィルターで非推奨 API 使用の警告あり（動作には問題なし）
+- Supabase 接続設定は環境変数での設定が必要
+- データベース接続テスト機能が実装済み（起動時に自動実行）
+- テストデータは 8 名の従業員と 7 件の案件要件を含む

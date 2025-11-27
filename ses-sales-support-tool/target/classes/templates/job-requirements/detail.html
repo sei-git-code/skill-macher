@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html
+  lang="ja"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{layout :: layout(~{::title}, ~{::content})}"
+>
+  <head>
+    <title>人員募集要項詳細 - SES営業支援ツール</title>
+  </head>
+  <body>
+    <div th:fragment="content">
+      <!-- Page Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 mb-0">
+            <i class="bi bi-briefcase me-2"></i>
+            <span th:text="${jobRequirement.projectName}"></span>
+          </h1>
+          <p class="text-muted mb-0">人員募集要項の詳細情報</p>
+        </div>
+        <div>
+          <a
+            th:href="@{/job-requirements/{id}/edit(id=${jobRequirement.id})}"
+            class="btn btn-outline-primary me-2"
+          >
+            <i class="bi bi-pencil me-1"></i>編集
+          </a>
+          <a href="/job-requirements" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>一覧に戻る
+          </a>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Main Information -->
+        <div class="col-lg-8">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">基本情報</h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <dl class="row">
+                    <dt class="col-sm-4">プロジェクト名</dt>
+                    <dd
+                      class="col-sm-8"
+                      th:text="${jobRequirement.projectName}"
+                    ></dd>
+
+                    <dt class="col-sm-4">クライアント</dt>
+                    <dd
+                      class="col-sm-8"
+                      th:text="${jobRequirement.clientName}"
+                    ></dd>
+
+                    <dt class="col-sm-4">プロジェクト期間</dt>
+                    <dd class="col-sm-8">
+                      <span
+                        th:text="${#temporals.format(jobRequirement.startDate, 'yyyy/MM/dd')}"
+                      ></span>
+                      ～
+                      <span
+                        th:text="${#temporals.format(jobRequirement.endDate, 'yyyy/MM/dd')}"
+                      ></span>
+                    </dd>
+
+                    <dt class="col-sm-4">勤務形態</dt>
+                    <dd class="col-sm-8">
+                      <span
+                        th:switch="${jobRequirement.workType}"
+                        class="badge"
+                      >
+                        <span th:case="REMOTE" class="badge bg-info"
+                          >リモート</span
+                        >
+                        <span th:case="ONSITE" class="badge bg-primary"
+                          >出社</span
+                        >
+                        <span th:case="HYBRID" class="badge bg-warning"
+                          >ハイブリッド</span
+                        >
+                      </span>
+                    </dd>
+                  </dl>
+                </div>
+                <div class="col-md-6">
+                  <dl class="row">
+                    <dt class="col-sm-4">優先度</dt>
+                    <dd class="col-sm-8">
+                      <span
+                        th:switch="${jobRequirement.priority}"
+                        class="badge"
+                      >
+                        <span th:case="HIGH" class="badge bg-danger">高</span>
+                        <span th:case="MEDIUM" class="badge bg-warning"
+                          >中</span
+                        >
+                        <span th:case="LOW" class="badge bg-success">低</span>
+                      </span>
+                    </dd>
+
+                    <dt class="col-sm-4">ステータス</dt>
+                    <dd class="col-sm-8">
+                      <span th:switch="${jobRequirement.status}" class="badge">
+                        <span th:case="OPEN" class="badge bg-success"
+                          >オープン</span
+                        >
+                        <span th:case="IN_PROGRESS" class="badge bg-primary"
+                          >進行中</span
+                        >
+                        <span th:case="CLOSED" class="badge bg-secondary"
+                          >クローズ</span
+                        >
+                      </span>
+                    </dd>
+
+                    <dt class="col-sm-4">経験年数</dt>
+                    <dd
+                      class="col-sm-8"
+                      th:text="${jobRequirement.experienceYears} + '年以上'"
+                    ></dd>
+
+                    <dt class="col-sm-4">予算上限</dt>
+                    <dd
+                      class="col-sm-8"
+                      th:text="${jobRequirement.budgetMax != null ? '¥' + #numbers.formatDecimal(jobRequirement.budgetMax, 0, 'COMMA', 0, 'POINT') + '/月' : '未設定'}"
+                    ></dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Technical Requirements -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">技術要件</h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <h6>必須スキル</h6>
+                  <div
+                    th:if="${jobRequirement.requiredSkills != null and !jobRequirement.requiredSkills.isEmpty()}"
+                  >
+                    <span
+                      th:each="skill : ${jobRequirement.requiredSkills}"
+                      th:text="${skill}"
+                      class="badge bg-danger me-1 mb-1"
+                    >
+                    </span>
+                  </div>
+                  <div
+                    th:unless="${jobRequirement.requiredSkills != null and !jobRequirement.requiredSkills.isEmpty()}"
+                    class="text-muted"
+                  >
+                    必須スキルは設定されていません
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <h6>希望スキル</h6>
+                  <div
+                    th:if="${jobRequirement.preferredSkills != null and !jobRequirement.preferredSkills.isEmpty()}"
+                  >
+                    <span
+                      th:each="skill : ${jobRequirement.preferredSkills}"
+                      th:text="${skill}"
+                      class="badge bg-info me-1 mb-1"
+                    >
+                    </span>
+                  </div>
+                  <div
+                    th:unless="${jobRequirement.preferredSkills != null and !jobRequirement.preferredSkills.isEmpty()}"
+                    class="text-muted"
+                  >
+                    希望スキルは設定されていません
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">プロジェクト詳細</h5>
+            </div>
+            <div class="card-body">
+              <div
+                th:if="${jobRequirement.description != null and !jobRequirement.description.isEmpty()}"
+              >
+                <p
+                  th:text="${jobRequirement.description}"
+                  style="white-space: pre-line"
+                ></p>
+              </div>
+              <div
+                th:unless="${jobRequirement.description != null and !jobRequirement.description.isEmpty()}"
+                class="text-muted"
+              >
+                詳細説明はありません
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+          <!-- Status Management -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">ステータス管理</h5>
+            </div>
+            <div class="card-body">
+              <form
+                th:action="@{/job-requirements/{id}/status(id=${jobRequirement.id})}"
+                method="post"
+              >
+                <div class="mb-3">
+                  <label for="status" class="form-label">ステータス</label>
+                  <select class="form-select" id="status" name="status">
+                    <option
+                      value="OPEN"
+                      th:selected="${jobRequirement.status == T(com.ses.salessupport.entity.JobRequirement$JobStatus).OPEN}"
+                    >
+                      オープン
+                    </option>
+                    <option
+                      value="IN_PROGRESS"
+                      th:selected="${jobRequirement.status == T(com.ses.salessupport.entity.JobRequirement$JobStatus).IN_PROGRESS}"
+                    >
+                      進行中
+                    </option>
+                    <option
+                      value="CLOSED"
+                      th:selected="${jobRequirement.status == T(com.ses.salessupport.entity.JobRequirement$JobStatus).CLOSED}"
+                    >
+                      クローズ
+                    </option>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                  <i class="bi bi-check-circle me-1"></i>ステータス更新
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Project Info -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">プロジェクト情報</h5>
+            </div>
+            <div class="card-body">
+              <dl class="row">
+                <dt class="col-sm-5">作成日</dt>
+                <dd
+                  class="col-sm-7"
+                  th:text="${#temporals.format(jobRequirement.createdAt, 'yyyy/MM/dd HH:mm')}"
+                ></dd>
+
+                <dt class="col-sm-5">更新日</dt>
+                <dd
+                  class="col-sm-7"
+                  th:text="${#temporals.format(jobRequirement.updatedAt, 'yyyy/MM/dd HH:mm')}"
+                ></dd>
+
+                <dt class="col-sm-5">作成者</dt>
+                <dd
+                  class="col-sm-7"
+                  th:text="${jobRequirement.createdBy != null ? jobRequirement.createdBy : 'システム'}"
+                ></dd>
+              </dl>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">操作</h5>
+            </div>
+            <div class="card-body">
+              <div class="d-grid gap-2">
+                <a
+                  th:href="@{/matching?jobId={id}(id=${jobRequirement.id})}"
+                  class="btn btn-success"
+                >
+                  <i class="bi bi-diagram-3 me-1"></i>マッチング実行
+                </a>
+                <a
+                  th:href="@{/job-requirements/{id}/edit(id=${jobRequirement.id})}"
+                  class="btn btn-outline-primary"
+                >
+                  <i class="bi bi-pencil me-1"></i>編集
+                </a>
+                <button
+                  type="button"
+                  class="btn btn-outline-danger"
+                  th:onclick="'confirmDelete(' + ${jobRequirement.id} + ')'"
+                >
+                  <i class="bi bi-trash me-1"></i>削除
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">削除確認</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            この募集要項を削除してもよろしいですか？この操作は取り消せません。
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              キャンセル
+            </button>
+            <form id="deleteForm" method="post" style="display: inline">
+              <button type="submit" class="btn btn-danger">削除</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function confirmDelete(jobId) {
+        document.getElementById("deleteForm").action =
+          "/job-requirements/" + jobId + "/delete";
+        new bootstrap.Modal(document.getElementById("deleteModal")).show();
+      }
+    </script>
+  </body>
+</html>
+

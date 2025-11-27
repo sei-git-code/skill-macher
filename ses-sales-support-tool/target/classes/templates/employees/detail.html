@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html
+  lang="ja"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{layout :: layout(~{::title}, ~{::content})}"
+>
+  <head>
+    <title>SES人員詳細 - SES営業支援ツール</title>
+  </head>
+  <body>
+    <div th:fragment="content">
+      <!-- Page Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 mb-0">
+            <i class="bi bi-person-badge me-2"></i>
+            <span
+              th:text="${employee.firstName + ' ' + employee.lastName}"
+            ></span>
+          </h1>
+          <p class="text-muted mb-0">SES人員の詳細情報</p>
+        </div>
+        <div>
+          <a
+            th:href="@{/employees/{id}/edit(id=${employee.id})}"
+            class="btn btn-outline-primary me-2"
+          >
+            <i class="bi bi-pencil me-1"></i>編集
+          </a>
+          <a href="/employees" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>一覧に戻る
+          </a>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Main Information -->
+        <div class="col-lg-8">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">基本情報</h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <dl class="row">
+                    <dt class="col-sm-4">名前</dt>
+                    <dd
+                      class="col-sm-8"
+                      th:text="${employee.firstName + ' ' + employee.lastName}"
+                    ></dd>
+
+                    <dt class="col-sm-4">メール</dt>
+                    <dd class="col-sm-8" th:text="${employee.email}"></dd>
+
+                    <dt class="col-sm-4">電話番号</dt>
+                    <dd
+                      class="col-sm-8"
+                      th:text="${employee.phone != null ? employee.phone : '未設定'}"
+                    ></dd>
+
+                    <dt class="col-sm-4">住所</dt>
+                    <dd
+                      class="col-sm-8"
+                      th:text="${employee.address != null ? employee.address : '未設定'}"
+                    ></dd>
+                  </dl>
+                </div>
+                <div class="col-md-6">
+                  <dl class="row">
+                    <dt class="col-sm-4">ステータス</dt>
+                    <dd class="col-sm-8">
+                      <span th:switch="${employee.status}" class="badge">
+                        <span th:case="ACTIVE" class="badge bg-success"
+                          >アクティブ</span
+                        >
+                        <span th:case="INACTIVE" class="badge bg-secondary"
+                          >非アクティブ</span
+                        >
+                        <span th:case="ON_PROJECT" class="badge bg-primary"
+                          >プロジェクト中</span
+                        >
+                      </span>
+                    </dd>
+
+                    <dt class="col-sm-4">雇用形態</dt>
+                    <dd class="col-sm-8">
+                      <span
+                        th:switch="${employee.employmentType}"
+                        class="badge"
+                      >
+                        <span th:case="FULL_TIME" class="badge bg-primary"
+                          >正社員</span
+                        >
+                        <span th:case="CONTRACT" class="badge bg-warning"
+                          >契約社員</span
+                        >
+                        <span th:case="FREELANCE" class="badge bg-info"
+                          >フリーランス</span
+                        >
+                      </span>
+                    </dd>
+
+                    <dt class="col-sm-4">経験年数</dt>
+                    <dd
+                      class="col-sm-8"
+                      th:text="${employee.experienceYears != null ? employee.experienceYears + '年' : '未設定'}"
+                    ></dd>
+
+                    <dt class="col-sm-4">時給</dt>
+                    <dd
+                      class="col-sm-8"
+                      th:text="${employee.hourlyRate != null ? '¥' + #numbers.formatDecimal(employee.hourlyRate, 0, 'COMMA', 0, 'POINT') : '未設定'}"
+                    ></dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Skills -->
+          <div class="card mb-4">
+            <div
+              class="card-header d-flex justify-content-between align-items-center"
+            >
+              <h5 class="mb-0">スキル情報</h5>
+              <a
+                th:href="@{/employees/{id}/skills/add(id=${employee.id})}"
+                class="btn btn-sm btn-primary"
+              >
+                <i class="bi bi-plus-circle me-1"></i>スキル追加
+              </a>
+            </div>
+            <div class="card-body">
+              <div th:if="${skills != null and !skills.empty}" class="row">
+                <div th:each="skill : ${skills}" class="col-md-6 mb-3">
+                  <div class="card border">
+                    <div class="card-body">
+                      <div
+                        class="d-flex justify-content-between align-items-start"
+                      >
+                        <div>
+                          <h6
+                            class="card-title mb-1"
+                            th:text="${skill.skillName}"
+                          ></h6>
+                          <p
+                            class="card-text text-muted mb-2"
+                            th:text="${skill.description != null ? skill.description : '説明なし'}"
+                          ></p>
+                          <div class="d-flex align-items-center">
+                            <span class="me-2">習熟度:</span>
+                            <div
+                              class="progress flex-grow-1 me-2"
+                              style="height: 8px"
+                            >
+                              <div
+                                class="progress-bar"
+                                th:style="'width: ' + ${skill.proficiencyLevel} + '%'"
+                                th:classappend="${skill.proficiencyLevel >= 80 ? 'bg-success' : (skill.proficiencyLevel >= 60 ? 'bg-warning' : 'bg-danger')}"
+                              ></div>
+                            </div>
+                            <span
+                              class="badge bg-secondary"
+                              th:text="${skill.proficiencyLevel} + '%'"
+                            ></span>
+                          </div>
+                        </div>
+                        <div class="btn-group-vertical btn-group-sm">
+                          <a
+                            th:href="@{/employees/skills/{skillId}/edit(skillId=${skill.id})}"
+                            class="btn btn-outline-secondary"
+                            title="編集"
+                          >
+                            <i class="bi bi-pencil"></i>
+                          </a>
+                          <button
+                            type="button"
+                            class="btn btn-outline-danger"
+                            th:onclick="'confirmDeleteSkill(' + ${skill.id} + ')'"
+                            title="削除"
+                          >
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                th:unless="${skills != null and !skills.empty}"
+                class="text-center py-4"
+              >
+                <i class="bi bi-tools display-4 text-muted"></i>
+                <h5 class="text-muted mt-3">スキルが登録されていません</h5>
+                <p class="text-muted">スキルを追加してください。</p>
+                <a
+                  th:href="@{/employees/{id}/skills/add(id=${employee.id})}"
+                  class="btn btn-primary"
+                >
+                  <i class="bi bi-plus-circle me-1"></i>スキル追加
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Profile -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">プロフィール</h5>
+            </div>
+            <div class="card-body">
+              <div
+                th:if="${employee.profile != null and !employee.profile.isEmpty()}"
+              >
+                <p
+                  th:text="${employee.profile}"
+                  style="white-space: pre-line"
+                ></p>
+              </div>
+              <div
+                th:unless="${employee.profile != null and !employee.profile.isEmpty()}"
+                class="text-muted"
+              >
+                プロフィールは登録されていません
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+          <!-- Status Management -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">ステータス管理</h5>
+            </div>
+            <div class="card-body">
+              <form
+                th:action="@{/employees/{id}/status(id=${employee.id})}"
+                method="post"
+              >
+                <div class="mb-3">
+                  <label for="status" class="form-label">ステータス</label>
+                  <select class="form-select" id="status" name="status">
+                    <option
+                      value="ACTIVE"
+                      th:selected="${employee.status == T(com.ses.salessupport.entity.Employee$EmployeeStatus).ACTIVE}"
+                    >
+                      アクティブ
+                    </option>
+                    <option
+                      value="INACTIVE"
+                      th:selected="${employee.status == T(com.ses.salessupport.entity.Employee$EmployeeStatus).INACTIVE}"
+                    >
+                      非アクティブ
+                    </option>
+                    <option
+                      value="ON_PROJECT"
+                      th:selected="${employee.status == T(com.ses.salessupport.entity.Employee$EmployeeStatus).ON_PROJECT}"
+                    >
+                      プロジェクト中
+                    </option>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                  <i class="bi bi-check-circle me-1"></i>ステータス更新
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Hourly Rate Management -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">時給管理</h5>
+            </div>
+            <div class="card-body">
+              <form
+                th:action="@{/employees/{id}/hourly-rate(id=${employee.id})}"
+                method="post"
+              >
+                <div class="mb-3">
+                  <label for="hourlyRate" class="form-label">時給（円）</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="hourlyRate"
+                    name="hourlyRate"
+                    th:value="${employee.hourlyRate}"
+                    min="0"
+                    step="100"
+                  />
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                  <i class="bi bi-currency-yen me-1"></i>時給更新
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Employee Info -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">登録情報</h5>
+            </div>
+            <div class="card-body">
+              <dl class="row">
+                <dt class="col-sm-5">登録日</dt>
+                <dd
+                  class="col-sm-7"
+                  th:text="${#temporals.format(employee.createdAt, 'yyyy/MM/dd HH:mm')}"
+                ></dd>
+
+                <dt class="col-sm-5">更新日</dt>
+                <dd
+                  class="col-sm-7"
+                  th:text="${#temporals.format(employee.updatedAt, 'yyyy/MM/dd HH:mm')}"
+                ></dd>
+
+                <dt class="col-sm-5">登録者</dt>
+                <dd
+                  class="col-sm-7"
+                  th:text="${employee.createdBy != null ? employee.createdBy : 'システム'}"
+                ></dd>
+              </dl>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">操作</h5>
+            </div>
+            <div class="card-body">
+              <div class="d-grid gap-2">
+                <a
+                  th:href="@{/matching?employeeId={id}(id=${employee.id})}"
+                  class="btn btn-success"
+                >
+                  <i class="bi bi-diagram-3 me-1"></i>マッチング実行
+                </a>
+                <a
+                  th:href="@{/employees/{id}/edit(id=${employee.id})}"
+                  class="btn btn-outline-primary"
+                >
+                  <i class="bi bi-pencil me-1"></i>編集
+                </a>
+                <button
+                  type="button"
+                  class="btn btn-outline-danger"
+                  th:onclick="'confirmDelete(' + ${employee.id} + ')'"
+                >
+                  <i class="bi bi-trash me-1"></i>削除
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">削除確認</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            この人員を削除してもよろしいですか？この操作は取り消せません。
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              キャンセル
+            </button>
+            <form id="deleteForm" method="post" style="display: inline">
+              <button type="submit" class="btn btn-danger">削除</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Skill Confirmation Modal -->
+    <div class="modal fade" id="deleteSkillModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">スキル削除確認</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            このスキルを削除してもよろしいですか？この操作は取り消せません。
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              キャンセル
+            </button>
+            <form id="deleteSkillForm" method="post" style="display: inline">
+              <button type="submit" class="btn btn-danger">削除</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function confirmDelete(employeeId) {
+        document.getElementById("deleteForm").action =
+          "/employees/" + employeeId + "/delete";
+        new bootstrap.Modal(document.getElementById("deleteModal")).show();
+      }
+
+      function confirmDeleteSkill(skillId) {
+        document.getElementById("deleteSkillForm").action =
+          "/employees/skills/" + skillId + "/delete";
+        new bootstrap.Modal(document.getElementById("deleteSkillModal")).show();
+      }
+    </script>
+  </body>
+</html>
+

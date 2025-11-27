@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html
+  lang="ja"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{layout :: layout(~{::title}, ~{::content})}"
+>
+  <head>
+    <title>人員募集要項作成 - SES営業支援ツール</title>
+  </head>
+  <body>
+    <div th:fragment="content">
+      <!-- Page Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 mb-0">
+            <i class="bi bi-plus-circle me-2"></i>人員募集要項作成
+          </h1>
+          <p class="text-muted mb-0">新しい人員募集要項を登録します</p>
+        </div>
+        <div>
+          <a href="/job-requirements" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>一覧に戻る
+          </a>
+        </div>
+      </div>
+
+      <form
+        th:action="@{/job-requirements/create}"
+        th:object="${jobRequirement}"
+        method="post"
+        class="needs-validation"
+        novalidate
+      >
+        <div class="row">
+          <!-- Basic Information -->
+          <div class="col-lg-8">
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5 class="mb-0">基本情報</h5>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="projectName" class="form-label"
+                      >プロジェクト名 <span class="text-danger">*</span></label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="projectName"
+                      th:field="*{projectName}"
+                      required
+                    />
+                    <div class="invalid-feedback">
+                      プロジェクト名を入力してください
+                    </div>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="clientName" class="form-label"
+                      >クライアント名 <span class="text-danger">*</span></label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="clientName"
+                      th:field="*{clientName}"
+                      required
+                    />
+                    <div class="invalid-feedback">
+                      クライアント名を入力してください
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="startDate" class="form-label">開始予定日</label>
+                    <input
+                      type="date"
+                      class="form-control"
+                      id="startDate"
+                      th:field="*{startDate}"
+                    />
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="endDate" class="form-label">終了予定日</label>
+                    <input
+                      type="date"
+                      class="form-control"
+                      id="endDate"
+                      th:field="*{endDate}"
+                    />
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-4 mb-3">
+                    <label for="workType" class="form-label">勤務形態</label>
+                    <select
+                      class="form-select"
+                      id="workType"
+                      th:field="*{workType}"
+                    >
+                      <option value="">選択してください</option>
+                      <option
+                        th:each="type : ${workTypes}"
+                        th:value="${type}"
+                        th:text="${type}"
+                      ></option>
+                    </select>
+                  </div>
+                  <div class="col-md-4 mb-3">
+                    <label for="priority" class="form-label">優先度</label>
+                    <select
+                      class="form-select"
+                      id="priority"
+                      th:field="*{priority}"
+                    >
+                      <option value="">選択してください</option>
+                      <option
+                        th:each="priority : ${priorities}"
+                        th:value="${priority}"
+                        th:text="${priority}"
+                      ></option>
+                    </select>
+                  </div>
+                  <div class="col-md-4 mb-3">
+                    <label for="status" class="form-label">ステータス</label>
+                    <select
+                      class="form-select"
+                      id="status"
+                      th:field="*{status}"
+                    >
+                      <option
+                        th:each="status : ${statuses}"
+                        th:value="${status}"
+                        th:text="${status}"
+                      ></option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="experienceYears" class="form-label"
+                      >必要経験年数</label
+                    >
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="experienceYears"
+                      th:field="*{experienceYears}"
+                      min="0"
+                      max="20"
+                    />
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="budgetMax" class="form-label"
+                      >予算上限（円/月）</label
+                    >
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="budgetMax"
+                      th:field="*{budgetMax}"
+                      min="0"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Technical Requirements -->
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5 class="mb-0">技術要件</h5>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="requiredSkills" class="form-label"
+                      >必須スキル</label
+                    >
+                    <textarea
+                      class="form-control"
+                      id="requiredSkills"
+                      th:field="*{requiredSkills}"
+                      rows="4"
+                      placeholder="Java, Spring Boot, PostgreSQL&#10;（カンマまたは改行で区切って入力）"
+                    ></textarea>
+                    <div class="form-text">
+                      カンマまたは改行で区切って入力してください
+                    </div>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="preferredSkills" class="form-label"
+                      >希望スキル</label
+                    >
+                    <textarea
+                      class="form-control"
+                      id="preferredSkills"
+                      th:field="*{preferredSkills}"
+                      rows="4"
+                      placeholder="Docker, AWS, React&#10;（カンマまたは改行で区切って入力）"
+                    ></textarea>
+                    <div class="form-text">
+                      カンマまたは改行で区切って入力してください
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5 class="mb-0">プロジェクト詳細</h5>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label for="description" class="form-label">詳細説明</label>
+                  <textarea
+                    class="form-control"
+                    id="description"
+                    th:field="*{description}"
+                    rows="6"
+                    placeholder="プロジェクトの詳細、業務内容、環境などを記述してください"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <div class="col-lg-4">
+            <!-- Save Actions -->
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5 class="mb-0">保存</h5>
+              </div>
+              <div class="card-body">
+                <div class="d-grid gap-2">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-1"></i>作成
+                  </button>
+                  <a href="/job-requirements" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i>キャンセル
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Help -->
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">入力のヒント</h5>
+              </div>
+              <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                  <li class="mb-2">
+                    <i class="bi bi-info-circle text-primary me-2"></i>
+                    <strong>プロジェクト名:</strong>
+                    分かりやすい名前を付けてください
+                  </li>
+                  <li class="mb-2">
+                    <i class="bi bi-info-circle text-primary me-2"></i>
+                    <strong>技術要件:</strong> 具体的な技術名を入力してください
+                  </li>
+                  <li class="mb-2">
+                    <i class="bi bi-info-circle text-primary me-2"></i>
+                    <strong>経験年数:</strong>
+                    最低限必要な年数を設定してください
+                  </li>
+                  <li>
+                    <i class="bi bi-info-circle text-primary me-2"></i>
+                    <strong>詳細説明:</strong>
+                    プロジェクトの背景や業務内容を詳しく記述してください
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      // Form validation
+      (function () {
+        "use strict";
+        window.addEventListener(
+          "load",
+          function () {
+            var forms = document.getElementsByClassName("needs-validation");
+            var validation = Array.prototype.filter.call(
+              forms,
+              function (form) {
+                form.addEventListener(
+                  "submit",
+                  function (event) {
+                    if (form.checkValidity() === false) {
+                      event.preventDefault();
+                      event.stopPropagation();
+                    }
+                    form.classList.add("was-validated");
+                  },
+                  false
+                );
+              }
+            );
+          },
+          false
+        );
+      })();
+    </script>
+  </body>
+</html>
+

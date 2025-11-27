@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html
+  lang="ja"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{layout :: layout(~{::title}, ~{::content})}"
+>
+  <head>
+    <title>ページが見つかりません - SES営業支援ツール</title>
+  </head>
+  <body>
+    <div th:fragment="content">
+      <div class="text-center py-5">
+        <div class="row justify-content-center">
+          <div class="col-md-6">
+            <i class="bi bi-exclamation-triangle display-1 text-warning"></i>
+            <h1 class="display-4 mt-3">404</h1>
+            <h2 class="h4 mb-3">ページが見つかりません</h2>
+            <p class="text-muted mb-4">
+              お探しのページは存在しないか、移動または削除された可能性があります。
+            </p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+              <a href="/" class="btn btn-primary">
+                <i class="bi bi-house me-1"></i>ホームに戻る
+              </a>
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                onclick="history.back()"
+              >
+                <i class="bi bi-arrow-left me-1"></i>前のページに戻る
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
